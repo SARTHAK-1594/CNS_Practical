@@ -1,0 +1,160 @@
+Here's the correct configuration for your requested setup, where:
+
+PC0 → Switch0 → Router0 ↔ (Triangle: Router1 & Router2) → Router2 → Switch1 → PC1
+
+Step 1: Physical Connections
+1. Router-to-Router (Serial Links - Triangle)
+Cable: Serial DCE/DTE
+
+Connections:
+
+Router0 (Serial0/0/0) → Router1 (Serial0/0/0)
+
+Router1 (Serial0/0/1) → Router2 (Serial0/0/0)
+
+Router2 (Serial0/0/1) → Router0 (Serial0/0/1)
+
+2. Router-to-Switch (Ethernet Links)
+
+3. Switch-to-PC Connections
+Cable: Copper Straight-Through
+
+Connections:
+
+Switch0 (Fa0/2) → PC0
+
+Switch1 (Fa0/2) → PC1
+-----------------------------------------------------------------------------------
+Connect Switch0 to Router0’s Fa0/0:
+
+Use a Copper Straight-Through cable.
+
+Switch0 (Fa0/1) → Router0 (Fa0/0)
+-----------------------------------------------------------------------------------
+Cable: Copper Straight-Through (solid green line in Packet Tracer)
+
+Ports:
+
+Router2 (1841): FastEthernet0/0 (Fa0/0)
+(Default port, no module needed)
+
+Switch1 (2960): FastEthernet0/1 (Fa0/1) (First port)
+-----------------------------------------------------------------------------------
+ROUTER0
+enable
+configure terminal
+hostname Router0
+
+! Configure LAN interface (connects to Switch0)
+interface FastEthernet0/0
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+ exit
+
+! Configure serial links (triangle topology)
+interface Serial0/0/0
+ ip address 10.0.12.1 255.255.255.252
+ clock rate 64000  ! DCE side
+ no shutdown
+ exit
+
+interface Serial0/0/1
+ ip address 10.0.13.1 255.255.255.252
+ clock rate 64000  ! DCE side
+ no shutdown
+ exit
+
+! RIP Configuration
+router rip
+ version 2
+ network 192.168.1.0
+ network 10.0.12.0
+ network 10.0.13.0
+ no auto-summary
+ end
+write memory  ! Save configuration
+-----------------------------------------------------------------------------------
+ROUTER1
+enable
+configure terminal
+hostname Router1
+
+! Configure serial links only (no LAN)
+interface Serial0/0/0
+ ip address 10.0.12.2 255.255.255.252
+ no shutdown  ! No clock rate (DTE side)
+ exit
+
+interface Serial0/0/1
+ ip address 10.0.23.1 255.255.255.252
+ clock rate 64000  ! DCE side to Router2
+ no shutdown
+ exit
+
+! RIP Configuration
+router rip
+ version 2
+ network 10.0.12.0
+ network 10.0.23.0
+ no auto-summary
+ end
+write memory
+-----------------------------------------------------------------------------------
+ROUTER2
+enable
+configure terminal
+hostname Router2
+
+! Configure LAN interface (connects to Switch1)
+interface FastEthernet0/0
+ ip address 192.168.2.1 255.255.255.0
+ no shutdown
+ exit
+
+! Configure serial links
+interface Serial0/0/0
+ ip address 10.0.23.2 255.255.255.252
+ no shutdown  ! DTE side
+ exit
+
+interface Serial0/0/1
+ ip address 10.0.13.2 255.255.255.252
+ no shutdown  ! DTE side
+ exit
+
+! RIP Configuration
+router rip
+ version 2
+ network 192.168.2.0
+ network 10.0.13.0
+ network 10.0.23.0
+ no auto-summary
+ end
+write memory
+-----------------------------------------------------------------------------------
+PC0
+Click on PC0
+
+Go to Desktop tab → IP Configuration
+
+Select Static and enter:
+IP Address: 192.168.1.2  
+Subnet Mask: 255.255.255.0  
+Default Gateway: 192.168.1.1  
+-----------------------------------------------------------------------------------
+PC1
+Click on PC1
+
+Go to Desktop tab → IP Configuration
+
+Select Static and enter:
+IP Address: 192.168.2.2  
+Subnet Mask: 255.255.255.0  
+Default Gateway: 192.168.2.1  
+-----------------------------------------------------------------------------------
+Send a Ping from PC0 to PC1
+Open PC0's Command Prompt:
+
+Click on PC0 → Desktop tab → Command Prompt.
+ping 192.168.2.2
+-----------------------------------------------------------------------------------
