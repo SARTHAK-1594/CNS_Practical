@@ -1,0 +1,136 @@
+1. Required Components
+Device/Component	Purpose
+Linksys-WRT300N	Wireless router (provides DHCP and MAC filtering)
+3x PC-PT (PC0, PC1, PC2)	Wireless clients (PC0 & PC1 use static IP, PC2 uses DHCP)
+Wireless Adapter (Linksys-WMP300N)	Needed for PCs to connect wirelessly
+------------------------------------------------------------------------------------------------
+Step 1: Build the Network Topology
+Open Cisco Packet Tracer
+
+Add Devices:
+
+Drag 1x Linksys-WRT300N (Wireless Router)
+
+Drag 3x PC-PT (PC0, PC1, PC2)
+
+Add Wireless Adapters to PCs
+
+Click on PC0 → Physical Tab → Power Off → Remove Ethernet NIC → Add Linksys-WMP300N → Power On
+
+Repeat for PC1 & PC2
+------------------------------------------------------------------------------------------------
+Step 2: Configure the Wireless Router (Linksys-WRT300N)
+Open Router Settings:
+
+Click on Wireless Router0 → GUI Tab
+
+Basic Wireless Settings:
+
+SSID: SecureWLAN
+
+Channel: 6
+
+Authentication: WPA2-PSK
+
+Passphrase: Cisco1234
+
+LAN & DHCP Settings:
+
+Router IP: 192.168.1.1
+
+Subnet Mask: 255.255.255.0
+
+DHCP Server: Enabled
+
+Start IP: 192.168.1.10
+
+Max Users: 10 (assigns up to 192.168.1.19)
+
+MAC Filtering (Block PC2):
+
+Go to Wireless MAC Filter
+
+Mode: Deny
+
+Add PC2’s MAC address (found under PC2 → Config → Wireless)
+------------------------------------------------------------------------------------------------
+Step 3: Configure the PCs
+A. PC0 & PC1 (Static IP)
+Set Static IP Manually:
+
+PC0:
+
+IP: 192.168.1.50
+
+Subnet Mask: 255.255.255.0
+
+Gateway: 192.168.1.1
+
+PC1:
+
+IP: 192.168.1.51
+
+Subnet Mask: 255.255.255.0
+
+Gateway: 192.168.1.1
+
+Connect to Wireless Network:
+
+Go to Desktop → PC Wireless → Connect to SecureWLAN
+
+Enter passphrase (Cisco1234)
+
+B. PC2 (DHCP Client - Blocked by MAC Filter)
+Set to DHCP:
+
+Go to PC2 → Desktop → IP Configuration → DHCP
+
+Try Connecting (Will Fail Due to MAC Filter):
+
+Attempt to connect to SecureWLAN (should fail)
+------------------------------------------------------------------------------------------------
+3. Verification & Testing
+PC	IP Assignment	Expected Result
+PC0	Static (192.168.1.50)	✅ Connects successfully
+PC1	Static (192.168.1.51)	✅ Connects successfully
+PC2	DHCP (Blocked)	❌ Fails to connect
+
+------------------------------------------------------------------------------------------------
+Test Connectivity:
+
+From PC0/PC1, run:
+
+bash
+ping 192.168.1.1  # Should succeed
+From PC2, connection should fail.
+------------------------------------------------------------------------------------------------
+Solution: Proper MAC Address Formatting
+On the PC:
+
+Click on the PC (e.g., PC2)
+
+Go to Config tab → Wireless (or FastEthernet if using wired)
+
+The MAC address is displayed as 6 pairs of hex digits (e.g., 00E0.A3B4.56C1)
+
+Correct Format for Linksys Router:
+
+Remove all dots (.) 
+
+Enter as 12 continuous digits with two digit one semicolon (e.g., 00:E0:A3:B4:56:C1)
+------------------------------------------------------------------------------------------------
+Test Connectivity:
+
+PC0 & PC1 (Allowed): Should connect successfully.
+
+PC2 (Blocked): Should fail to connect.
+
+Check Router Logs (if available):
+
+Some routers show blocked connection attempts.
+------------------------------------------------------------------------------------------------
+MAC filtering is case-insensitive (you can use uppercase or lowercase letters).
+
+If the issue persists, restart the router in Packet Tracer.
+
+For stricter security, use MAC whitelisting (only allow specific devices).
