@@ -1,0 +1,51 @@
+Now that your basic connectivity is working, let's implement Practical 1 Part B: Access Control Lists (ACLs). We'll configure:
+
+A Standard ACL to block a specific PC from accessing the router.
+
+An Extended ACL to block Telnet/HTTP from a specific subnet.
+
+Use same CPT from 1st
+-----------------------------------------------------------------------
+1. Standard ACL (Block PC0 from Accessing Router0)
+On Router0:
+enable
+configure terminal
+! Create ACL to block PC0's IP
+access-list 1 deny host 192.168.1.2
+access-list 1 permit any
+! Apply ACL inbound on the LAN interface
+interface FastEthernet0/0
+ip access-group 1 in
+end
+write memory
+-----------------------------------------------------------------------
+Verification:
+
+From PC0, ping 192.168.1.1 → Should fail.
+
+From PC1, ping 192.168.1.1 → Should succeed.
+-----------------------------------------------------------------------
+2. Extended ACL (Block Telnet/HTTP from Subnet)
+On Router0:
+enable
+configure terminal
+! Create ACL to block Telnet/HTTP from 192.168.1.0/24
+access-list 101 deny tcp 192.168.1.0 0.0.0.255 any eq 23
+access-list 101 deny tcp 192.168.1.0 0.0.0.255 any eq 80
+access-list 101 permit ip any any
+! Apply ACL inbound on the LAN interface
+interface FastEthernet0/0
+ip access-group 101 in
+end
+write memory
+-----------------------------------------------------------------------
+Verification:
+Test Telnet Block:
+From PC0, try to telnet to Router2
+telnet 192.168.2.1
+
+Test HTTP Block:
+Configure an HTTP server on PC1 (Desktop tab → HTTP Server).
+
+From PC0, open a web browser and enter http://192.168.2.2 → Should fail.
+
