@@ -1,0 +1,194 @@
+Network Topology Overview
+PC0 → Router0 → Router1 → Router2 → Router3 → Router0 (ring topology)
+
+Router2 is also connected to Server0
+---------------------------------------------------------------------
+Step 1: Build the Network Topology
+Open Cisco Packet Tracer
+
+Add the following devices:
+
+4 Routers (Router0, Router1, Router2, Router3)
+
+1 PC (PC0)
+
+1 Server (Server0)
+
+Connect them as follows:
+
+PC0 FastEthernet0 to Router0 FastEthernet0/0
+
+Router0 Serial0/0/0 to Router1 Serial0/0/0 (use DCE cable on Router0 side)
+
+Router1 Serial0/0/1 to Router2 Serial0/0/0 (use DCE cable on Router1 side)
+
+Router2 Serial0/0/1 to Router3 Serial0/0/0 (use DCE cable on Router2 side)
+
+Router3 Serial0/0/1 to Router0 Serial0/0/1 (use DCE cable on Router3 side)
+
+Router2 FastEthernet0/0 to Server0 FastEthernet0
+---------------------------------------------------------------------
+Step 2: Configure IP Addresses
+PC0 Configuration:
+Click on PC0
+
+Go to Desktop tab > IP Configuration
+
+Set:
+
+IP Address: 192.168.1.10
+
+Subnet Mask: 255.255.255.0
+
+Default Gateway: 192.168.1.1
+
+Server0 Configuration:
+Click on Server0
+
+Go to Desktop tab > IP Configuration
+
+Set:
+
+IP Address: 192.168.2.10
+
+Subnet Mask: 255.255.255.0
+
+Default Gateway: 192.168.2.1
+---------------------------------------------------------------------
+Router0 Configuration:
+enable
+configure terminal
+interface FastEthernet0/0
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+interface Serial0/0/0
+ ip address 10.0.0.1 255.255.255.252
+ clock rate 64000  (only on DCE side)
+ no shutdown
+interface Serial0/0/1
+ ip address 10.0.3.2 255.255.255.252
+ clock rate 64000  (only on DCE side)
+ no shutdown
+end
+
+enable
+configure terminal
+router eigrp 100
+ network 192.168.1.0
+ network 10.0.0.0
+ network 10.0.3.0
+ no auto-summary
+end
+write memory
+---------------------------------------------------------------------
+Router1 Configuration:
+enable
+configure terminal
+interface Serial0/0/0
+ ip address 10.0.0.2 255.255.255.252
+ no shutdown
+interface Serial0/0/1
+ ip address 10.0.1.1 255.255.255.252
+ clock rate 64000  (only on DCE side)
+ no shutdown
+end
+
+enable
+configure terminal
+router eigrp 100
+ network 10.0.0.0
+ network 10.0.1.0
+ no auto-summary
+end
+write memory
+---------------------------------------------------------------------
+Router2 Configuration:
+enable
+configure terminal
+interface Serial0/0/0
+ ip address 10.0.1.2 255.255.255.252
+ no shutdown
+interface Serial0/0/1
+ ip address 10.0.2.1 255.255.255.252
+ clock rate 64000  (only on DCE side)
+ no shutdown
+interface FastEthernet0/0
+ ip address 192.168.2.1 255.255.255.0
+ no shutdown
+end
+
+enable
+configure terminal
+router eigrp 100
+ network 10.0.1.0
+ network 10.0.2.0
+ network 192.168.2.0
+ no auto-summary
+end
+write memory
+---------------------------------------------------------------------
+Router3 Configuration:
+enable
+configure terminal
+interface Serial0/0/0
+ ip address 10.0.2.2 255.255.255.252
+ no shutdown
+interface Serial0/0/1
+ ip address 10.0.3.1 255.255.255.252
+ clock rate 64000  (only on DCE side)
+ no shutdown
+end
+
+enable
+configure terminal
+router eigrp 100
+ network 10.0.2.0
+ network 10.0.3.0
+ no auto-summary
+end
+write memory
+---------------------------------------------------------------------
+Step 4: Verify EIGRP Configuration
+On any router, run:
+
+show ip eigrp neighbors
+
+Check EIGRP Topology Table:
+show ip eigrp topology
+
+Check Routing Table:
+show ip route
+---------------------------------------------------------------------
+Step 5: Testing Connectivity
+From PC0, open Command Prompt
+
+Ping Server0:
+
+ping 192.168.2.10
+---------------------------------------------------------------------
+View Current K Values
+On any router, check the current K values:
+
+Router# show ip protocols
+---------------------------------------------------------------------
+View EIGRP Metric Calculation
+show ip eigrp topology 192.168.2.0 255.255.255.0
+---------------------------------------------------------------------
+View Detailed Metric Components
+Router# show interface Serial0/0/0
+---------------------------------------------------------------------
+Practical Verification
+On PC0's command prompt:
+
+ping 192.168.2.10
+
+tracert 192.168.2.10
+
+---------------------------------------------------------------------
+The metric calculation from your output:
+
+Bandwidth term: 10^7/1544 = 6476
+
+Delay term: 40100/10 = 4010
+
+Composite metric: (6476 + 4010) * 256 = 2684416
